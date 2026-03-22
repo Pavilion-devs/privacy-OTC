@@ -1,198 +1,22 @@
-import { useMemo, useState } from "react";
-import {
-  useAnchorWallet,
-  useConnection,
-  useWallet,
-} from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import {
-  SessionWalletProvider,
-  SessionWalletInterface,
-  useSessionKeyManager,
-} from "@magicblock-labs/gum-react-sdk";
-import type { AnchorWallet } from "@solana/wallet-adapter-react";
-import type { Connection } from "@solana/web3.js";
-import {
-  MAGICBLOCK_PRIVATE_RPC_URL,
-  MAGICBLOCK_SOLANA_CLUSTER,
   MAGICBLOCK_SESSION_TARGET_PROGRAM_ID,
   MAGICBLOCK_SESSION_TOP_UP_LAMPORTS,
   MAGICBLOCK_SESSION_VALIDITY_MINUTES,
-  createPrivateConnection,
-  createSessionForProgram,
   formatExpiry,
-  requestPrivateAuthToken,
-  resolveSessionTargetProgram,
   shortenAddress,
-  verifyPrivateRpc,
 } from "../lib/magicblock";
-
-type RuntimeBusyAction = "verify" | "auth" | "createSession" | "revokeSession" | null;
-
-interface RuntimeState {
-  integrityVerified: boolean | null;
-  authToken: string | null;
-  authExpiresAt: number | null;
-  error: string | null;
-}
-
-const initialRuntimeState: RuntimeState = {
-  integrityVerified: null,
-  authToken: null,
-  authExpiresAt: null,
-  error: null,
-};
+import {
+  MagicBlockRuntimeState,
+  RuntimeBusyAction,
+  RuntimeNoticeTone,
+  useMagicBlockRuntime,
+} from "../providers/MagicBlockRuntimeProvider";
 
 export function WalletRuntimePanel() {
-  const { connection } = useConnection();
-  const anchorWallet = useAnchorWallet();
-
-  if (!anchorWallet) {
-    return <WalletRuntimePanelBase connection={connection} sessionWallet={null} />;
-  }
-
-  return (
-    <SessionBackedWalletRuntimePanel
-      anchorWallet={anchorWallet}
-      connection={connection}
-    />
-  );
-}
-
-function SessionBackedWalletRuntimePanel({
-  anchorWallet,
-  connection,
-}: {
-  anchorWallet: AnchorWallet;
-  connection: Connection;
-}) {
-  const sessionWallet = useSessionKeyManager(
-    anchorWallet,
-    connection,
-    MAGICBLOCK_SOLANA_CLUSTER,
-  );
-
-  return (
-    <SessionWalletProvider sessionWallet={sessionWallet}>
-      <WalletRuntimePanelBase connection={connection} sessionWallet={sessionWallet} />
-    </SessionWalletProvider>
-  );
-}
-
-function WalletRuntimePanelBase({
-  connection,
-  sessionWallet,
-}: {
-  connection: Connection;
-  sessionWallet: SessionWalletInterface | null;
-}) {
-  const wallet = useWallet();
-  const [runtime, setRuntime] = useState<RuntimeState>(initialRuntimeState);
-  const [busyAction, setBusyAction] = useState<RuntimeBusyAction>(null);
-
-  const sessionTarget = useMemo(() => resolveSessionTargetProgram(), []);
-  const privateConnection = useMemo(
-    () =>
-      runtime.authToken === null
-        ? null
-        : createPrivateConnection(runtime.authToken, MAGICBLOCK_PRIVATE_RPC_URL),
-    [runtime.authToken],
-  );
-
-  async function handleVerify() {
-    setBusyAction("verify");
-    setRuntime((previous) => ({ ...previous, error: null }));
-
-    try {
-      const integrityVerified = await verifyPrivateRpc(MAGICBLOCK_PRIVATE_RPC_URL);
-      setRuntime((previous) => ({
-        ...previous,
-        integrityVerified,
-      }));
-    } catch (error) {
-      setRuntime((previous) => ({
-        ...previous,
-        error: error instanceof Error ? error.message : "TEE verification failed.",
-      }));
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
-  async function handleIssueAuthToken() {
-    if (!wallet.publicKey || !wallet.signMessage) {
-      setRuntime((previous) => ({
-        ...previous,
-        error: "Connected wallet must support signMessage to request a PER auth token.",
-      }));
-      return;
-    }
-
-    setBusyAction("auth");
-    setRuntime((previous) => ({ ...previous, error: null }));
-
-    try {
-      const { token, expiresAt } = await requestPrivateAuthToken(
-        {
-          publicKey: wallet.publicKey,
-          signMessage: wallet.signMessage,
-        },
-        MAGICBLOCK_PRIVATE_RPC_URL,
-      );
-      setRuntime((previous) => ({
-        ...previous,
-        authToken: token,
-        authExpiresAt: expiresAt,
-      }));
-    } catch (error) {
-      setRuntime((previous) => ({
-        ...previous,
-        error: error instanceof Error ? error.message : "Auth token request failed.",
-      }));
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
-  async function handleCreateSession() {
-    if (sessionWallet === null || sessionTarget.publicKey === null) {
-      return;
-    }
-
-    setBusyAction("createSession");
-    setRuntime((previous) => ({ ...previous, error: null }));
-
-    try {
-      await createSessionForProgram(sessionWallet, sessionTarget.publicKey);
-    } catch (error) {
-      setRuntime((previous) => ({
-        ...previous,
-        error: error instanceof Error ? error.message : "Session creation failed.",
-      }));
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
-  async function handleRevokeSession() {
-    if (sessionWallet === null) {
-      return;
-    }
-
-    setBusyAction("revokeSession");
-    setRuntime((previous) => ({ ...previous, error: null }));
-
-    try {
-      await sessionWallet.revokeSession();
-    } catch (error) {
-      setRuntime((previous) => ({
-        ...previous,
-        error: error instanceof Error ? error.message : "Session revoke failed.",
-      }));
-    } finally {
-      setBusyAction(null);
-    }
-  }
+  const runtime = useMagicBlockRuntime();
+  const sessionStatusLabel = getRuntimeLabel(runtime.state, runtime.sessionToken);
+  const sessionStatusTone = getRuntimeTone(runtime.state, runtime.sessionToken);
 
   return (
     <section className="panel">
@@ -201,15 +25,18 @@ function WalletRuntimePanelBase({
           <div className="section-label">Live wallet runtime</div>
           <h3>MagicBlock wiring</h3>
         </div>
-        <span className={`status ${getRuntimeTone(runtime, sessionWallet)}`}>
-          {getRuntimeLabel(runtime, sessionWallet)}
-        </span>
+        <span className={`status ${sessionStatusTone}`}>{sessionStatusLabel}</span>
       </div>
 
       <p className="panel-copy">
-        This panel uses a real wallet connection, MagicBlock TEE verification,
-        PER auth token requests, and Session Key lifecycle hooks.
+        This panel is the single runtime source of truth for wallet connection,
+        MagicBlock TEE verification, PER auth token requests, and Session Key lifecycle hooks.
       </p>
+
+      <div className={`runtime-notice ${runtime.state.notice?.tone ?? "info"}`}>
+        <strong>{getNoticeTitle(runtime.state.notice?.tone ?? "info")}</strong>
+        <p>{runtime.state.notice?.message ?? "Runtime ready."}</p>
+      </div>
 
       <div className="wallet-button-row">
         <WalletMultiButton />
@@ -218,47 +45,71 @@ function WalletRuntimePanelBase({
       <dl className="settlement-grid compact runtime-grid">
         <div>
           <dt>Solana RPC</dt>
-          <dd>{connection.rpcEndpoint}</dd>
+          <dd>{runtime.connectionEndpoint}</dd>
         </div>
         <div>
           <dt>Private RPC</dt>
-          <dd>{MAGICBLOCK_PRIVATE_RPC_URL}</dd>
+          <dd>{runtime.privateRpcUrl}</dd>
         </div>
         <div>
           <dt>Wallet</dt>
-          <dd>{shortenAddress(wallet.publicKey?.toBase58())}</dd>
+          <dd>{shortenAddress(runtime.walletAddress)}</dd>
+        </div>
+        <div>
+          <dt>TEE check</dt>
+          <dd>{formatIntegrity(runtime.state.integrityVerified, runtime.state.integrityCheckedAt)}</dd>
         </div>
         <div>
           <dt>Sign message</dt>
-          <dd>{wallet.signMessage ? "Available" : "Not available"}</dd>
+          <dd>{runtime.signMessageAvailable ? "Available" : "Not available"}</dd>
         </div>
         <div>
           <dt>PER auth token</dt>
-          <dd>{runtime.authToken ? shortenAddress(runtime.authToken) : "Not issued"}</dd>
+          <dd>{runtime.state.authToken ? shortenAddress(runtime.state.authToken) : "Not issued"}</dd>
         </div>
         <div>
           <dt>Token expiry</dt>
-          <dd>{formatExpiry(runtime.authExpiresAt)}</dd>
+          <dd>{formatExpiry(runtime.state.authExpiresAt)}</dd>
         </div>
       </dl>
 
       <div className="button-row">
         <button
           className="primary-button"
-          disabled={!wallet.connected || busyAction !== null}
-          onClick={() => void handleVerify()}
+          disabled={!runtime.walletConnected || runtime.state.busyAction !== null}
+          onClick={() => void runtime.actions.verifyPrivateRpc()}
           type="button"
         >
-          {busyAction === "verify" ? "Verifying..." : "Verify TEE RPC"}
+          {getVerifyLabel(runtime.state.busyAction)}
         </button>
         <button
           className="secondary-button"
-          disabled={!wallet.connected || !wallet.signMessage || busyAction !== null}
-          onClick={() => void handleIssueAuthToken()}
+          disabled={
+            !runtime.walletConnected ||
+            !runtime.signMessageAvailable ||
+            runtime.state.busyAction !== null
+          }
+          onClick={() => void runtime.actions.issueAuthToken()}
           type="button"
         >
-          {busyAction === "auth" ? "Authorizing..." : "Issue PER auth token"}
+          {getAuthLabel(runtime.state.busyAction)}
         </button>
+      </div>
+
+      <div className="runtime-divider" />
+
+      <div className="runtime-block">
+        <div className="runtime-subheader">
+          <strong>What To Test</strong>
+          <small>No env required for steps 1 and 2</small>
+        </div>
+        <ul className="checklist runtime-checklist">
+          <li>Connect Phantom or Solflare and confirm the wallet address appears above.</li>
+          <li>Click `Verify TEE RPC` and confirm `TEE check` changes to `Passed` with a timestamp.</li>
+          <li>Click `Issue PER auth token` and confirm a token preview and expiry time appear.</li>
+          <li>Switch back to `Deal Rooms` and confirm hidden terms unlock only after the live runtime is ready.</li>
+          <li>Ignore `Create session key` until `VITE_SESSION_TARGET_PROGRAM_ID` is configured.</li>
+        </ul>
       </div>
 
       <div className="runtime-divider" />
@@ -268,8 +119,8 @@ function WalletRuntimePanelBase({
           <strong>Session Keys</strong>
           <small>
             Target program:{" "}
-            {sessionTarget.publicKey
-              ? shortenAddress(sessionTarget.publicKey.toBase58())
+            {runtime.sessionTargetAddress
+              ? shortenAddress(runtime.sessionTargetAddress)
               : "Not configured"}
           </small>
         </div>
@@ -277,11 +128,11 @@ function WalletRuntimePanelBase({
         <dl className="settlement-grid compact runtime-grid">
           <div>
             <dt>Session signer</dt>
-            <dd>{shortenAddress(sessionWallet?.publicKey?.toBase58())}</dd>
+            <dd>{shortenAddress(runtime.sessionSigner)}</dd>
           </div>
           <div>
             <dt>Session token</dt>
-            <dd>{shortenAddress(sessionWallet?.sessionToken)}</dd>
+            <dd>{shortenAddress(runtime.sessionToken)}</dd>
           </div>
           <div>
             <dt>Top-up lamports</dt>
@@ -297,57 +148,53 @@ function WalletRuntimePanelBase({
           <button
             className="primary-button"
             disabled={
-              !wallet.connected ||
-              sessionWallet === null ||
-              sessionTarget.publicKey === null ||
-              busyAction !== null
+              !runtime.walletConnected ||
+              runtime.sessionTargetAddress === null ||
+              runtime.state.busyAction !== null
             }
-            onClick={() => void handleCreateSession()}
+            onClick={() => void runtime.actions.createSession()}
             type="button"
           >
-            {busyAction === "createSession" || sessionWallet?.isLoading
-              ? "Creating session..."
-              : "Create session key"}
+            {getCreateSessionLabel(runtime.state.busyAction, runtime.sessionLoading)}
           </button>
           <button
             className="secondary-button"
             disabled={
-              !wallet.connected ||
-              sessionWallet === null ||
-              !sessionWallet.sessionToken ||
-              busyAction !== null
+              !runtime.walletConnected ||
+              runtime.sessionToken === null ||
+              runtime.state.busyAction !== null
             }
-            onClick={() => void handleRevokeSession()}
+            onClick={() => void runtime.actions.revokeSession()}
             type="button"
           >
-            {busyAction === "revokeSession" ? "Revoking..." : "Revoke session"}
+            {getRevokeSessionLabel(runtime.state.busyAction)}
           </button>
         </div>
 
         <p className="panel-copy">
-          {sessionTarget.error ??
+          {runtime.sessionTargetError ??
             `Configured via VITE_SESSION_TARGET_PROGRAM_ID=${MAGICBLOCK_SESSION_TARGET_PROGRAM_ID}.`}
         </p>
       </div>
 
-      {privateConnection ? (
+      {runtime.privateConnectionEndpoint ? (
         <p className="panel-copy">
-          Private connection ready at <code>{privateConnection.rpcEndpoint}</code>
+          Private connection ready at <code>{runtime.privateConnectionEndpoint}</code>
         </p>
       ) : null}
 
-      {runtime.error || sessionWallet?.error ? (
-        <p className="runtime-error">{runtime.error ?? sessionWallet?.error}</p>
+      {runtime.state.error || runtime.sessionError ? (
+        <p className="runtime-error">{runtime.state.error ?? runtime.sessionError}</p>
       ) : null}
     </section>
   );
 }
 
 function getRuntimeTone(
-  runtime: RuntimeState,
-  sessionWallet: SessionWalletInterface | null,
+  runtime: MagicBlockRuntimeState,
+  sessionToken: string | null,
 ): "ready" | "review" | "bidding" {
-  if (runtime.authToken || sessionWallet?.sessionToken) {
+  if (runtime.authToken || sessionToken) {
     return "ready";
   }
 
@@ -358,11 +205,8 @@ function getRuntimeTone(
   return "bidding";
 }
 
-function getRuntimeLabel(
-  runtime: RuntimeState,
-  sessionWallet: SessionWalletInterface | null,
-): string {
-  if (runtime.authToken && sessionWallet?.sessionToken) {
+function getRuntimeLabel(runtime: MagicBlockRuntimeState, sessionToken: string | null): string {
+  if (runtime.authToken && sessionToken) {
     return "auth + session";
   }
 
@@ -370,7 +214,7 @@ function getRuntimeLabel(
     return "auth ready";
   }
 
-  if (sessionWallet?.sessionToken) {
+  if (sessionToken) {
     return "session ready";
   }
 
@@ -379,4 +223,57 @@ function getRuntimeLabel(
   }
 
   return "wallet idle";
+}
+
+function formatIntegrity(
+  integrityVerified: boolean | null,
+  checkedAt: number | null,
+): string {
+  if (integrityVerified === null || checkedAt === null) {
+    return "Not run";
+  }
+
+  const label = new Date(checkedAt).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${integrityVerified ? "Passed" : "Failed"} · ${label}`;
+}
+
+function getNoticeTitle(tone: RuntimeNoticeTone): string {
+  if (tone === "success") {
+    return "Verification complete";
+  }
+
+  if (tone === "warning") {
+    return "Check required";
+  }
+
+  if (tone === "error") {
+    return "Action failed";
+  }
+
+  return "Next step";
+}
+
+function getVerifyLabel(busyAction: RuntimeBusyAction): string {
+  return busyAction === "verify" ? "Verifying..." : "Verify TEE RPC";
+}
+
+function getAuthLabel(busyAction: RuntimeBusyAction): string {
+  return busyAction === "auth" ? "Authorizing..." : "Issue PER auth token";
+}
+
+function getCreateSessionLabel(
+  busyAction: RuntimeBusyAction,
+  sessionLoading: boolean,
+): string {
+  return busyAction === "createSession" || sessionLoading
+    ? "Creating session..."
+    : "Create session key";
+}
+
+function getRevokeSessionLabel(busyAction: RuntimeBusyAction): string {
+  return busyAction === "revokeSession" ? "Revoking..." : "Revoke session";
 }

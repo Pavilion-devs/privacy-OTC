@@ -1,0 +1,19 @@
+[toolchain]
+anchor_version = "0.31.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+veil_otc = "GxWYbU37z4AcLqzfQi1WpRhGJoBZ4nf38REXR6XtZok3"
+
+[programs.devnet]
+veil_otc = "GxWYbU37z4AcLqzfQi1WpRhGJoBZ4nf38REXR6XtZok3"
+
+[provider]
+cluster = "Devnet"
+wallet = "/Users/favourolaboye/.config/solana/id.json"
+
+[scripts]
+test = "anchor test"

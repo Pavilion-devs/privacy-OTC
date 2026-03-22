@@ -11,6 +11,7 @@ import {
   MAGICBLOCK_SOLANA_CLUSTER,
   MAGICBLOCK_SOLANA_RPC_URL,
 } from "../lib/magicblock";
+import { MagicBlockRuntimeProvider } from "./MagicBlockRuntimeProvider";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -52,7 +53,9 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <StableConnectionProvider endpoint={MAGICBLOCK_SOLANA_RPC_URL}>
       <StableWalletProvider autoConnect wallets={wallets}>
-        <StableWalletModalProvider>{children}</StableWalletModalProvider>
+        <StableWalletModalProvider>
+          <MagicBlockRuntimeProvider>{children}</MagicBlockRuntimeProvider>
+        </StableWalletModalProvider>
       </StableWalletProvider>
     </StableConnectionProvider>
   );

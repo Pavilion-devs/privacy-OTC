@@ -1,0 +1,1070 @@
+{
+  "address": "GxWYbU37z4AcLqzfQi1WpRhGJoBZ4nf38REXR6XtZok3",
+  "metadata": {
+    "name": "veil_otc",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Private OTC marketplace core program for VeilOTC"
+  },
+  "instructions": [
+    {
+      "name": "archive_listing",
+      "discriminator": [
+        82,
+        2,
+        249,
+        248,
+        157,
+        190,
+        138,
+        42
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "listing_shell"
+          ]
+        },
+        {
+          "name": "listing_shell",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_bidding",
+      "discriminator": [
+        219,
+        203,
+        190,
+        31,
+        25,
+        53,
+        75,
+        228
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "listing_shell"
+          ]
+        },
+        {
+          "name": "listing_shell",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "complete_settlement",
+      "discriminator": [
+        204,
+        142,
+        168,
+        39,
+        247,
+        27,
+        183,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "listing_shell"
+          ]
+        },
+        {
+          "name": "listing_shell",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "settlement_receipt",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "create_bid",
+      "discriminator": [
+        234,
+        10,
+        213,
+        160,
+        52,
+        26,
+        91,
+        142
+      ],
+      "accounts": [
+        {
+          "name": "bidder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "listing_shell",
+          "writable": true
+        },
+        {
+          "name": "bid_shell",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  105,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing_shell"
+              },
+              {
+                "kind": "account",
+                "path": "bidder"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bid_private",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  105,
+                  100,
+                  45,
+                  112,
+                  114,
+                  105,
+                  118,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "bid_shell"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bid_private_permission",
+          "writable": true
+        },
+        {
+          "name": "permission_program",
+          "address": "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_listing",
+      "discriminator": [
+        18,
+        168,
+        45,
+        24,
+        191,
+        31,
+        117,
+        54
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "listing_shell",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "arg",
+                "path": "seed"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing_private",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103,
+                  45,
+                  112,
+                  114,
+                  105,
+                  118,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing_shell"
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing_private_permission",
+          "writable": true
+        },
+        {
+          "name": "permission_program",
+          "address": "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "seed",
+          "type": "u64"
+        },
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CreateListingArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "delegate_bid_private",
+      "discriminator": [
+        254,
+        229,
+        148,
+        213,
+        27,
+        17,
+        178,
+        22
+      ],
+      "accounts": [
+        {
+          "name": "bidder",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "bid_shell"
+          ]
+        },
+        {
+          "name": "listing_shell",
+          "relations": [
+            "bid_shell"
+          ]
+        },
+        {
+          "name": "bid_shell"
+        },
+        {
+          "name": "private_details",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  105,
+                  100,
+                  45,
+                  112,
+                  114,
+                  105,
+                  118,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "bid_shell"
+              }
+            ]
+          },
+          "relations": [
+            "bid_shell"
+          ]
+        },
+        {
+          "name": "bid_private_permission",
+          "writable": true
+        },
+        {
+          "name": "veil_otc_program",
+          "address": "GxWYbU37z4AcLqzfQi1WpRhGJoBZ4nf38REXR6XtZok3"
+        },
+        {
+          "name": "private_details_delegate_buffer",
+          "writable": true
+        },
+        {
+          "name": "private_details_delegation_record",
+          "writable": true
+        },
+        {
+          "name": "private_details_delegation_metadata",
+          "writable": true
+        },
+        {
+          "name": "permission_program",
+          "address": "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1"
+        },
+        {
+          "name": "private_permission_delegate_buffer",
+          "writable": true
+        },
+        {
+          "name": "private_permission_delegation_record",
+          "writable": true
+        },
+        {
+          "name": "private_permission_delegation_metadata",
+          "writable": true
+        },
+        {
+          "name": "delegation_program",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "validator"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "delegate_listing_private",
+      "discriminator": [
+        106,
+        137,
+        80,
+        210,
+        29,
+        191,
+        11,
+        43
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "listing_shell"
+          ]
+        },
+        {
+          "name": "listing_shell",
+          "writable": true
+        },
+        {
+          "name": "private_details",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103,
+                  45,
+                  112,
+                  114,
+                  105,
+                  118,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing_shell"
+              }
+            ]
+          },
+          "relations": [
+            "listing_shell"
+          ]
+        },
+        {
+          "name": "listing_private_permission",
+          "writable": true
+        },
+        {
+          "name": "veil_otc_program",
+          "address": "GxWYbU37z4AcLqzfQi1WpRhGJoBZ4nf38REXR6XtZok3"
+        },
+        {
+          "name": "private_details_delegate_buffer",
+          "writable": true
+        },
+        {
+          "name": "private_details_delegation_record",
+          "writable": true
+        },
+        {
+          "name": "private_details_delegation_metadata",
+          "writable": true
+        },
+        {
+          "name": "permission_program",
+          "address": "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1"
+        },
+        {
+          "name": "private_permission_delegate_buffer",
+          "writable": true
+        },
+        {
+          "name": "private_permission_delegation_record",
+          "writable": true
+        },
+        {
+          "name": "private_permission_delegation_metadata",
+          "writable": true
+        },
+        {
+          "name": "delegation_program",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "validator"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "select_winner",
+      "discriminator": [
+        119,
+        66,
+        44,
+        236,
+        79,
+        158,
+        82,
+        51
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "listing_shell"
+          ]
+        },
+        {
+          "name": "listing_shell",
+          "writable": true
+        },
+        {
+          "name": "bid_shell",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_bid_private",
+      "discriminator": [
+        53,
+        155,
+        249,
+        196,
+        72,
+        34,
+        75,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "bidder",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "bid_shell"
+          ]
+        },
+        {
+          "name": "listing_shell",
+          "relations": [
+            "bid_shell"
+          ]
+        },
+        {
+          "name": "bid_shell"
+        },
+        {
+          "name": "private_details",
+          "writable": true,
+          "relations": [
+            "bid_shell"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "UpdateBidPrivateArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_listing_private",
+      "discriminator": [
+        76,
+        194,
+        72,
+        249,
+        212,
+        229,
+        83,
+        50
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "listing_shell"
+          ]
+        },
+        {
+          "name": "listing_shell"
+        },
+        {
+          "name": "private_details",
+          "writable": true,
+          "relations": [
+            "listing_shell"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "hidden_terms",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "BidPrivate",
+      "discriminator": [
+        55,
+        233,
+        16,
+        217,
+        235,
+        201,
+        64,
+        59
+      ]
+    },
+    {
+      "name": "BidShell",
+      "discriminator": [
+        132,
+        77,
+        68,
+        22,
+        3,
+        113,
+        3,
+        188
+      ]
+    },
+    {
+      "name": "ListingPrivate",
+      "discriminator": [
+        1,
+        178,
+        252,
+        90,
+        164,
+        242,
+        102,
+        78
+      ]
+    },
+    {
+      "name": "ListingShell",
+      "discriminator": [
+        111,
+        206,
+        118,
+        205,
+        10,
+        221,
+        56,
+        50
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "UnauthorizedSeller",
+      "msg": "Only the listing seller can perform this action."
+    },
+    {
+      "code": 6001,
+      "name": "UnauthorizedBidder",
+      "msg": "Only the bidder can update this bid."
+    },
+    {
+      "code": 6002,
+      "name": "ListingNotBidding",
+      "msg": "The listing is not currently accepting bids."
+    },
+    {
+      "code": 6003,
+      "name": "ListingNotInReview",
+      "msg": "The listing is not currently in seller review."
+    },
+    {
+      "code": 6004,
+      "name": "ListingNotSettling",
+      "msg": "The listing is not currently settling."
+    },
+    {
+      "code": 6005,
+      "name": "ListingNotClosed",
+      "msg": "Only closed listings can be archived."
+    },
+    {
+      "code": 6006,
+      "name": "SellerCannotBid",
+      "msg": "The seller cannot bid on their own listing."
+    },
+    {
+      "code": 6007,
+      "name": "BidderNotAllowed",
+      "msg": "This bidder is not allowlisted for the selected listing."
+    },
+    {
+      "code": 6008,
+      "name": "BidDoesNotBelongToListing",
+      "msg": "The selected bid does not belong to this listing."
+    },
+    {
+      "code": 6009,
+      "name": "WinnerNotSelected",
+      "msg": "A winner must be selected before settlement can complete."
+    },
+    {
+      "code": 6010,
+      "name": "InvalidAskRange",
+      "msg": "Ask range is invalid."
+    },
+    {
+      "code": 6011,
+      "name": "FieldTooLong",
+      "msg": "String field exceeds the maximum supported length."
+    },
+    {
+      "code": 6012,
+      "name": "AllowlistTooLarge",
+      "msg": "Allowlist exceeds the maximum supported size."
+    },
+    {
+      "code": 6013,
+      "name": "InvalidAllocation",
+      "msg": "Allocation must be between 1 and 10,000 basis points."
+    },
+    {
+      "code": 6014,
+      "name": "InvalidPrivateAccount",
+      "msg": "The provided private account does not match the public shell."
+    },
+    {
+      "code": 6015,
+      "name": "InvalidPermissionAccount",
+      "msg": "The derived permission account does not match the expected PDA."
+    },
+    {
+      "code": 6016,
+      "name": "InvalidDelegationAccount",
+      "msg": "The derived delegation account does not match the expected PDA."
+    }
+  ],
+  "types": [
+    {
+      "name": "BidPrivate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing_shell",
+            "type": "pubkey"
+          },
+          {
+            "name": "bid_shell",
+            "type": "pubkey"
+          },
+          {
+            "name": "bidder",
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "price_usd",
+            "type": "u64"
+          },
+          {
+            "name": "allocation_bps",
+            "type": "u16"
+          },
+          {
+            "name": "note",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BidShell",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing_shell",
+            "type": "pubkey"
+          },
+          {
+            "name": "bidder",
+            "type": "pubkey"
+          },
+          {
+            "name": "private_details",
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BidStatus"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BidStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Sealed"
+          },
+          {
+            "name": "Selected"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateListingArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "type": "string"
+          },
+          {
+            "name": "settlement_asset",
+            "type": "string"
+          },
+          {
+            "name": "summary",
+            "type": "string"
+          },
+          {
+            "name": "ask_min_usd",
+            "type": "u64"
+          },
+          {
+            "name": "ask_max_usd",
+            "type": "u64"
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingPrivate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing_shell",
+            "type": "pubkey"
+          },
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "hidden_terms",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingShell",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "ask_min_usd",
+            "type": "u64"
+          },
+          {
+            "name": "ask_max_usd",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "ListingStatus"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "asset_name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "type": "string"
+          },
+          {
+            "name": "settlement_asset",
+            "type": "string"
+          },
+          {
+            "name": "summary",
+            "type": "string"
+          },
+          {
+            "name": "allowlist",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "private_details",
+            "type": "pubkey"
+          },
+          {
+            "name": "winning_bid",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "settlement_receipt",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Bidding"
+          },
+          {
+            "name": "Review"
+          },
+          {
+            "name": "Settling"
+          },
+          {
+            "name": "Closed"
+          },
+          {
+            "name": "Archived"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateBidPrivateArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price_usd",
+            "type": "u64"
+          },
+          {
+            "name": "allocation_bps",
+            "type": "u16"
+          },
+          {
+            "name": "note",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

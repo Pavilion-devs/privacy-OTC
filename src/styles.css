@@ -448,6 +448,14 @@ button {
   gap: 0.8rem;
 }
 
+.listings-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
 /* --- Settlement layout --- */
 
 .settlement-layout {
@@ -519,6 +527,7 @@ button {
 }
 
 .status.closed,
+.status.archived,
 .status.expired {
   border-color: rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.06);
@@ -759,6 +768,17 @@ button {
   align-items: center;
 }
 
+.closeout-actions {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(245, 239, 231, 0.06);
+}
+
 /* --- Buttons --- */
 
 .button-row {
@@ -947,6 +967,44 @@ button {
   background: rgba(240, 182, 127, 0.18);
 }
 
+.runtime-notice {
+  margin-top: 0.8rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(245, 239, 231, 0.08);
+  border-radius: 3px;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.runtime-notice strong {
+  font-size: 0.86rem;
+}
+
+.runtime-notice p {
+  margin: 0;
+  color: #d8cabb;
+  font-size: 0.84rem;
+}
+
+.runtime-notice.info {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.runtime-notice.success {
+  background: rgba(154, 214, 164, 0.08);
+  border-color: rgba(154, 214, 164, 0.24);
+}
+
+.runtime-notice.warning {
+  background: rgba(240, 182, 127, 0.1);
+  border-color: rgba(240, 182, 127, 0.24);
+}
+
+.runtime-notice.error {
+  background: rgba(188, 101, 101, 0.1);
+  border-color: rgba(188, 101, 101, 0.24);
+}
+
 .runtime-grid dd {
   word-break: break-word;
 }
@@ -978,6 +1036,10 @@ button {
   margin: 0.7rem 0 0;
   color: #f0b67f;
   font-size: 0.88rem;
+}
+
+.runtime-checklist {
+  margin-top: 0;
 }
 
 /* --- Checklist --- */

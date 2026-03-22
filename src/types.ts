@@ -1,40 +1,41 @@
-export type ListingStatus = "bidding" | "review" | "settling" | "closed";
+export type ListingStatus = "bidding" | "review" | "settling" | "closed" | "archived";
 
-export type ParticipantRole = "seller" | "buyer" | "observer";
+export type BidStatus = "sealed" | "selected";
 
-export interface Participant {
-  id: string;
-  name: string;
-  handle: string;
-  role: ParticipantRole;
-  accessGranted: boolean;
-  jurisdiction: string;
-}
-
-export interface Listing {
-  id: string;
+export interface ListingRecord {
+  address: string;
+  allowlist: string[];
+  askMaxUsd: number;
+  askMinUsd: number;
   assetName: string;
-  symbol: string;
-  seller: string;
   category: string;
-  structure: string;
-  status: ListingStatus;
+  createdAt: number;
+  hiddenTerms: string;
+  privateDetails: string;
+  privateLoaded: boolean;
+  seed: string;
+  seller: string;
   settlementAsset: string;
-  askRange: string;
-  timelineLabel: string;
-  visibility: string;
+  settlementReceipt: string;
+  status: ListingStatus;
   summary: string;
-  hiddenTerms: string[];
+  symbol: string;
+  updatedAt: number;
+  winningBid: string | null;
 }
 
-export interface Bid {
-  id: string;
+export interface BidRecord {
+  address: string;
+  allocationBps: number;
+  bidder: string;
+  createdAt: number;
   listingId: string;
-  bidderId: string;
-  priceLabel: string;
-  allocationLabel: string;
-  submittedAt: string;
-  status: "sealed" | "leading" | "selected" | "expired";
+  note: string;
+  priceUsd: number;
+  privateDetails: string;
+  privateLoaded: boolean;
+  status: BidStatus;
+  updatedAt: number;
 }
 
 export interface Milestone {
@@ -42,12 +43,4 @@ export interface Milestone {
   label: string;
   detail: string;
   complete: boolean;
-}
-
-export interface Settlement {
-  listingId: string;
-  transferMode: string;
-  privacyMode: string;
-  status: "ready" | "pending" | "complete";
-  receipt: string;
 }

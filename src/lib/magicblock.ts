@@ -28,6 +28,9 @@ export const MAGICBLOCK_SOLANA_RPC_URL =
   (configuredCluster === "localnet" ? "http://127.0.0.1:8899" : clusterApiUrl(configuredCluster));
 export const MAGICBLOCK_PRIVATE_RPC_URL =
   import.meta.env.VITE_PRIVATE_RPC_URL ?? "https://tee.magicblock.app";
+export const MAGICBLOCK_TEE_VALIDATOR = new PublicKey(
+  import.meta.env.VITE_PER_VALIDATOR ?? "FnE6VJT5QNZdedZPnCoLsARgBwoE6DeJNjBs2H1gySXA",
+);
 export const MAGICBLOCK_SESSION_TARGET_PROGRAM_ID =
   import.meta.env.VITE_SESSION_TARGET_PROGRAM_ID ?? "";
 export const MAGICBLOCK_SESSION_TOP_UP_LAMPORTS = parsePositiveNumber(

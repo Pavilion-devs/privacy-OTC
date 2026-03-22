@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/polyfills.ts","./src/types.ts","./src/vite-env.d.ts","./src/components/walletruntimepanel.tsx","./src/data/mockdata.ts","./src/lib/magicblock.ts","./src/providers/appproviders.tsx"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/polyfills.ts","./src/types.ts","./src/vite-env.d.ts","./src/components/walletruntimepanel.tsx","./src/idl/veil_otc.ts","./src/lib/magicblock.ts","./src/lib/veilotcprogram.ts","./src/providers/appproviders.tsx","./src/providers/magicblockruntimeprovider.tsx"],"version":"5.9.3"}
